@@ -9,4 +9,4 @@ import { SpreadsheetController } from 'src/controllers/spreadsheet.controller';
   providers: [OutlookService, SpreadsheetService],
   controllers: [SpreadsheetController],
 })
-export class NotificationModule {}
+export class SpreadsheetModule {}

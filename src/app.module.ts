@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 // import { NotificationModule } from './modules/notification.module';
-import { SpreadsheetController } from './controllers/spreadsheet.controller';
+import { SpreadsheetModule } from './modules/spreadsheet.module';
 @Module({
-  imports: [ConfigModule.forRoot(), SpreadsheetController],
+  imports: [ConfigModule.forRoot(), SpreadsheetModule],
 })
 export class AppModule {}

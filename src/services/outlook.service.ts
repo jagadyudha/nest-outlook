@@ -3,10 +3,12 @@ import { HttpService } from '@nestjs/axios';
 import { Observable, mergeMap } from 'rxjs';
 import { catchError, map } from 'rxjs';
 import { AxiosResponse } from 'axios';
+import { load as cheerioLoad } from 'cheerio'
 
 @Injectable()
 export class OutlookService {
   constructor(private readonly httpService: HttpService) {}
+
   refreshToken(): Observable<AxiosResponse<any>> {
     const body = {
       client_id: process.env.OUTLOOK_CLIENT_ID,
@@ -59,5 +61,26 @@ export class OutlookService {
         );
       }),
     );
+  }
+
+  tableToJson(payload: {
+    header: Array<string>;
+    headerCount: number;
+    body: string;
+  }) {
+    const table = payload.body.match(/<table[^>]*>(.*?)<\/table>/g) ?? '';
+    const $ = cheerioLoad(table.toLocaleString());
+    const tableRows = $('table tr');
+    const tableData = [];
+    tableRows.each((_, row) => {
+      const rowData = {};
+      $(row)
+        .find('td')
+        .each((_, cell) => {
+          rowData[`${payload.header[_]}`] = $(cell).text() || '';
+        });
+      tableData.push(rowData);
+    });
+    return tableData.slice(payload.headerCount, tableData.length);
   }
 }

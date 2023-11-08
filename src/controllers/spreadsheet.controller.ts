@@ -13,7 +13,7 @@ export class SpreadsheetController {
   async create(@Body() data: any) {
     const body = data.body ?? '';
     const subject: string = (data.subject ?? '').toLowerCase();
-    if (subject.includes('Penugasan Audit')) {
+    if (subject.includes('penugasan audit')) {
       const header = [
         'ID',
         'ID NETWORK',

@@ -3,7 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { Observable, mergeMap } from 'rxjs';
 import { catchError, map } from 'rxjs';
 import { AxiosResponse } from 'axios';
-import { load as cheerioLoad } from 'cheerio'
+import { load as cheerioLoad } from 'cheerio';
 
 @Injectable()
 export class OutlookService {

@@ -10,11 +10,6 @@ export class NotificationController {
     private readonly spreadSheetService: SpreadsheetService,
   ) {}
 
-  @Post('/sendEmailToExcel')
-  async sendEmailToExcel(@Body() body: any) {
-    // todo: accept json from pipedream
-    return body;
-  }
   // async sendEmailToExcel() {
   //   const messages: any = await firstValueFrom(
   //     this.outlookService.getUserMessages(),

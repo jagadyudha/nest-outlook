@@ -18,14 +18,6 @@ export class SpreadsheetService {
     return doc;
   }
 
-  // async checkLastRow() {
-  //   const doc = await this.doc();
-  //   const sheet = doc.sheetsByIndex[0];
-  //   const rows = await sheet.getRows();
-  //   const lastRowId = rows.length ? rows[rows.length - 1].get('Id') : null;
-  //   return lastRowId;
-  // }
-
   async sendToExcel(data: {
     id: string;
     email: string;

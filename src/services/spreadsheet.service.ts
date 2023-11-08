@@ -20,11 +20,15 @@ export class SpreadsheetService {
 
   async sendToExcel(data: any) {
     const doc = await this.doc();
-    const sheet = doc.sheetsByIndex[0];
-    if (data.number) {
-      data.number = sheet.rowCount - 1;
-    }
+    const sheet = doc.sheetsByIndex[doc.sheetCount - 1];
     await sheet.addRow(data, { insert: true });
+    return data;
+  }
+
+  async sendBulkToExcel(data: any) {
+    const doc = await this.doc();
+    const sheet = doc.sheetsByIndex[doc.sheetCount - 1];
+    await sheet.addRows(data, { insert: true });
     return data;
   }
 }

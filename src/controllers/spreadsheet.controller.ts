@@ -13,15 +13,32 @@ export class SpreadsheetController {
   async create(@Body() data: any) {
     const body = data.body ?? '';
     const subject: string = (data.subject ?? '').toLowerCase();
+    const date = new Date(
+      body.date ?? new Date().toUTCString(),
+    ).toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'Asia/Jakarta',
+      timeZoneName: 'short',
+    });
+    const doc = await this.spreadSheetService.doc();
+    const rows = await doc.sheetsByIndex[doc.sheetCount - 1].getRows({
+      offset: 2,
+    });
     if (subject.includes('penugasan audit')) {
       const header = [
-        'ID',
+        'No',
         'ID NETWORK',
         'NETWORK NAME',
         'NETWORK TYPE',
         'AREA',
         'REGION',
         'MICROFINANCING',
+        // 'CENTRAL CREDIT',
+        // 'CENTRAL REMEDIAL',
+        // 'CENTRAL WAREHOUSE',
+        // 'CENTRAL SUPPORT',
         'REVIEW',
         'TL',
         'TM 1',
@@ -29,11 +46,34 @@ export class SpreadsheetController {
         'BATCH',
         'PERIOD',
       ];
-      return this.outlookService.tableToJson({
+      const table = this.outlookService.tableToJson({
         header,
         headerCount: 2,
         body,
       });
+      const data = table.map((item, index) => {
+        return [
+          rows.length + index + 1,
+          item['ID NETWORK'],
+          item['NETWORK NAME'],
+          item['AREA'],
+          item['REVIEW'],
+          '',
+          item['PERIOD'],
+          item['BATCH'],
+          item['TL'],
+          item['TM 1'],
+          item['TM 2'],
+          '',
+          '',
+          date,
+        ];
+      });
+      this.spreadSheetService.sendBulkToExcel(data);
+    } else {
+      return {
+        message: 'Nothing.',
+      };
     }
   }
 
@@ -41,13 +81,19 @@ export class SpreadsheetController {
   async createHeader() {
     const doc = await this.spreadSheetService.doc();
     const sheet = await doc.addSheet({
-      title: new Date().toString(),
+      title: new Date()
+        .toLocaleDateString('id-ID', {
+          day: '2-digit',
+          month: '2-digit',
+          year: '2-digit',
+        })
+        .replace(/\//g, ' '),
     });
     sheet.setHeaderRow(
       [
         'No',
         'ID Network',
-        'Project Name',
+        'Network Name',
         'Area',
         'Project Type',
         'SI',
@@ -63,7 +109,7 @@ export class SpreadsheetController {
         'Pelaporan',
         '',
       ],
-      2,
+      1,
     );
     sheet.setHeaderRow(
       [
@@ -84,6 +130,28 @@ export class SpreadsheetController {
         '',
         'Target',
         'Actual',
+      ],
+      2,
+    );
+    sheet.setHeaderRow(
+      [
+        'A',
+        '',
+        'B',
+        '',
+        'C',
+        'D',
+        'E',
+        'F',
+        'G',
+        'H',
+        'I',
+        'J',
+        'K',
+        'L',
+        'M',
+        'N',
+        'O',
       ],
       3,
     );
@@ -138,8 +206,8 @@ export class SpreadsheetController {
     mergeHorizontal.forEach(async (item) => {
       await sheet.mergeCells(
         {
-          startRowIndex: 1,
-          endRowIndex: 3,
+          startRowIndex: 0,
+          endRowIndex: 2,
           startColumnIndex: item.startColumnIndex,
           endColumnIndex: item.endColumnIndex,
         },
@@ -149,8 +217,8 @@ export class SpreadsheetController {
     mergetVertical.forEach(async (item) => {
       await sheet.mergeCells(
         {
-          startRowIndex: 1,
-          endRowIndex: 2,
+          startRowIndex: 0,
+          endRowIndex: 1,
           startColumnIndex: item.startRowIndex,
           endColumnIndex: item.endRowIndex,
         },

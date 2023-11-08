@@ -18,23 +18,13 @@ export class SpreadsheetService {
     return doc;
   }
 
-  async sendToExcel(data: {
-    id: string;
-    email: string;
-    subject: string;
-    body: string;
-  }) {
+  async sendToExcel(data: any) {
     const doc = await this.doc();
     const sheet = doc.sheetsByIndex[0];
-    await sheet.addRow(
-      {
-        Id: data.id,
-        Email: data.email,
-        Subject: data.subject,
-        Body: data.body,
-      },
-      { insert: true },
-    );
+    if (data.number) {
+      data.number = sheet.rowCount - 1;
+    }
+    await sheet.addRow(data, { insert: true });
     return data;
   }
 }

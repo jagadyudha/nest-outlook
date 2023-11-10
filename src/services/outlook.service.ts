@@ -63,24 +63,46 @@ export class OutlookService {
     );
   }
 
-  tableToJson(payload: {
-    header: Array<string>;
-    headerCount: number;
-    body: string;
-  }) {
+  tableToJson(payload: { headerCount: number; body: string }) {
     const table = payload.body.match(/<table[^>]*>(.*?)<\/table>/g) ?? '';
     const $ = cheerioLoad(table.toLocaleString());
     const tableRows = $('table tr');
     const tableData = [];
+    let rowIndex = 0;
     tableRows.each((_, row) => {
-      const rowData = {};
+      let columnIndex = 0;
+
       $(row)
-        .find('td')
+        .find('td, th')
         .each((_, cell) => {
-          rowData[`${payload.header[_]}`] = $(cell).text() || '';
+          const rowspan = parseInt($(cell).attr('rowspan')) || 1;
+          const colspan = parseInt($(cell).attr('colspan')) || 1;
+          const value = $(cell).text() || '';
+          for (let i = 0; i < rowspan; i++) {
+            if (!tableData[rowIndex + i]) {
+              tableData[rowIndex + i] = [];
+            }
+            while (tableData[rowIndex + i][columnIndex]) {
+              columnIndex++;
+            }
+            for (let j = 0; j < colspan; j++) {
+              tableData[rowIndex + i][columnIndex + j] = value;
+            }
+          }
+          columnIndex += colspan;
         });
-      tableData.push(rowData);
+      rowIndex++;
     });
-    return tableData.slice(payload.headerCount, tableData.length);
+    const header = tableData.slice(0, payload.headerCount);
+    const content = tableData.slice(payload.headerCount, tableData.length);
+    const lastHeader = header[header.length - 1];
+    const result = content.map((row) => {
+      const obj = {};
+      row.map((item, index) => {
+        obj[lastHeader[index]] = item;
+      });
+      return obj;
+    });
+    return result;
   }
 }

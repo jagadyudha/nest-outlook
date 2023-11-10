@@ -27,27 +27,7 @@ export class SpreadsheetController {
       offset: 2,
     });
     if (subject.includes('penugasan audit')) {
-      const header = [
-        'No',
-        'ID NETWORK',
-        'NETWORK NAME',
-        'NETWORK TYPE',
-        'AREA',
-        'REGION',
-        'MICROFINANCING',
-        // 'CENTRAL CREDIT',
-        // 'CENTRAL REMEDIAL',
-        // 'CENTRAL WAREHOUSE',
-        // 'CENTRAL SUPPORT',
-        'REVIEW',
-        'TL',
-        'TM 1',
-        'TM 2',
-        'BATCH',
-        'PERIOD',
-      ];
       const table = this.outlookService.tableToJson({
-        header,
         headerCount: 2,
         body,
       });
@@ -69,12 +49,27 @@ export class SpreadsheetController {
           date,
         ];
       });
-      this.spreadSheetService.sendBulkToExcel(data);
-    } else {
-      return {
-        message: 'Nothing.',
-      };
+      return this.spreadSheetService.sendBulkToExcel(data);
     }
+
+    if (subject.includes('pemberitahuan pemeriksaan')) {
+      const table = [];
+      const rowsObjects = rows.map((row) => {
+        return { ...row.toObject(), index: row.rowNumber };
+      });
+      table.forEach(async (item) => {
+        const find = rowsObjects.find(
+          (row) => row['NETWORK ID'] === item['NETWORK ID'],
+        );
+        if (find) {
+          rows[find.index].assign({});
+          await rows[find.index].save();
+        }
+      });
+    }
+    return {
+      message: 'Nothing.',
+    };
   }
 
   @Post('create_header')

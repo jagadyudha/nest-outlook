@@ -13,17 +13,14 @@ export class SpreadsheetController {
   async create(@Body() data: any) {
     const body = data.body ?? '';
     const subject: string = (data.subject ?? '').toLowerCase();
-    const date = new Date(
-      body.date ?? new Date().toUTCString(),
-    ).toLocaleDateString('id-ID', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-      timeZone: 'Asia/Jakarta',
-      timeZoneName: 'short',
-    });
+    const date = data.date ? new Date(data.date) : new Date();
     const doc = await this.spreadSheetService.doc();
-    const rows = await doc.sheetsByIndex[doc.sheetCount - 1].getRows({
+    const stringMonth =
+      'Bulan ' +
+      date.toLocaleDateString('id-ID', {
+        month: 'long',
+      });
+    const rows = await doc.sheetsByTitle[stringMonth].getRows({
       offset: 2,
     });
     if (subject.includes('penugasan audit')) {
@@ -46,28 +43,47 @@ export class SpreadsheetController {
           item['TM 2'],
           '',
           '',
-          date,
+          date.toLocaleDateString('id-ID', {
+            weekday: 'long',
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+            timeZone: 'Asia/Jakarta',
+          }),
         ];
       });
-      return this.spreadSheetService.sendBulkToExcel(data);
+      return this.spreadSheetService.sendBulkToExcel(data, {
+        sheetName: stringMonth,
+      });
     }
 
     if (subject.includes('pemberitahuan pemeriksaan audit')) {
       const OFFSET = 3;
-      await doc.sheetsByIndex[doc.sheetCount - 1].loadHeaderRow(OFFSET);
+      await doc.sheetsByTitle[stringMonth].loadHeaderRow(OFFSET);
       const table = this.outlookService.tableToJson({
         headerCount: 1,
         body,
       });
       const rowsObjects = rows.map((row) => {
-        return { ...row.toObject(), index: row.rowNumber - (OFFSET - 1) };
+        return { ...row.toObject(), index: row.rowNumber - OFFSET - 1 };
       });
       table.forEach(async (item) => {
         const find = rowsObjects.find(
           (row) => item['ID Network'] == row['ID NETWORK'],
         );
         if (find) {
-          rows[find.index].assign({ A: 69, G: 'anjay', H: 'Anjay' });
+          const dateString = date
+            .toLocaleDateString('id-ID', {
+              weekday: 'long',
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric',
+              timeZone: 'Asia/Jakarta',
+            })
+            .toString();
+          rows[find.index].assign({
+            M: ` ${dateString}`,
+          });
           await rows[find.index].save();
         }
       });
@@ -75,9 +91,23 @@ export class SpreadsheetController {
     }
 
     if (subject.includes('pelaporan hasil audit')) {
+      const OFFSET = 3;
+      await doc.sheetsByTitle[stringMonth].loadHeaderRow(OFFSET);
       const table = this.outlookService.tableToJson({
         headerCount: 1,
         body,
+      });
+      const rowsObjects = rows.map((row) => {
+        return { ...row.toObject(), index: row.rowNumber - OFFSET - 1 };
+      });
+      table.forEach(async (item) => {
+        const find = rowsObjects.find(
+          (row) => item['ID Network'] == row['ID NETWORK'],
+        );
+        if (find) {
+          rows[find.index].assign({ O: item['ACTUAL CLOSING'] });
+          await rows[find.index].save();
+        }
       });
       return table;
     }
@@ -91,13 +121,11 @@ export class SpreadsheetController {
   async createHeader() {
     const doc = await this.spreadSheetService.doc();
     const sheet = await doc.addSheet({
-      title: new Date()
-        .toLocaleDateString('id-ID', {
-          day: '2-digit',
-          month: '2-digit',
-          year: '2-digit',
-        })
-        .replace(/\//g, ' '),
+      title:
+        'Bulan ' +
+        new Date().toLocaleDateString('id-ID', {
+          month: 'long',
+        }),
     });
     sheet.setHeaderRow(
       [

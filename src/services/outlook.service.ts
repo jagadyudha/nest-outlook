@@ -71,7 +71,6 @@ export class OutlookService {
     let rowIndex = 0;
     tableRows.each((_, row) => {
       let columnIndex = 0;
-
       $(row)
         .find('td, th')
         .each((_, cell) => {

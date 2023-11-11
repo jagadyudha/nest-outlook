@@ -25,9 +25,12 @@ export class SpreadsheetService {
     return data;
   }
 
-  async sendBulkToExcel(data: any) {
+  async sendBulkToExcel(data: any, setting?: any) {
     const doc = await this.doc();
-    const sheet = doc.sheetsByIndex[doc.sheetCount - 1];
+    let sheet = doc.sheetsByIndex[doc.sheetCount - 1];
+    if (setting.sheetName) {
+      sheet = doc.sheetsByTitle[setting.sheetName];
+    }
     await sheet.addRows(data, { insert: true });
     return data;
   }

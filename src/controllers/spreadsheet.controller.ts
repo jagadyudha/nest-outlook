@@ -52,21 +52,36 @@ export class SpreadsheetController {
       return this.spreadSheetService.sendBulkToExcel(data);
     }
 
-    if (subject.includes('pemberitahuan pemeriksaan')) {
-      const table = [];
+    if (subject.includes('pemberitahuan pemeriksaan audit')) {
+      const OFFSET = 3;
+      await doc.sheetsByIndex[doc.sheetCount - 1].loadHeaderRow(OFFSET);
+      const table = this.outlookService.tableToJson({
+        headerCount: 1,
+        body,
+      });
       const rowsObjects = rows.map((row) => {
-        return { ...row.toObject(), index: row.rowNumber };
+        return { ...row.toObject(), index: row.rowNumber - (OFFSET - 1) };
       });
       table.forEach(async (item) => {
         const find = rowsObjects.find(
-          (row) => row['NETWORK ID'] === item['NETWORK ID'],
+          (row) => item['ID Network'] == row['ID NETWORK'],
         );
         if (find) {
-          rows[find.index].assign({});
+          rows[find.index].assign({ A: 69, G: 'anjay', H: 'Anjay' });
           await rows[find.index].save();
         }
       });
+      return {};
     }
+
+    if (subject.includes('pelaporan hasil audit')) {
+      const table = this.outlookService.tableToJson({
+        headerCount: 1,
+        body,
+      });
+      return table;
+    }
+
     return {
       message: 'Nothing.',
     };

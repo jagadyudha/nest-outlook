@@ -32,6 +32,13 @@ export class SpreadsheetController {
         headerCount: 2,
         body,
       });
+      const currentDate = date.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'Asia/Jakarta',
+      });
       const data = table.map((item, index) => {
         return [
           rows.length + index + 1,
@@ -47,13 +54,7 @@ export class SpreadsheetController {
           item['TM 2'],
           '',
           '',
-          date.toLocaleDateString('id-ID', {
-            weekday: 'long',
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric',
-            timeZone: 'Asia/Jakarta',
-          }),
+          currentDate,
         ];
       });
       return this.spreadSheetService.sendBulkToExcel(data, {

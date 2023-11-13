@@ -20,6 +20,10 @@ export class SpreadsheetController {
       date.toLocaleDateString('id-ID', {
         month: 'long',
       });
+    const sheet = doc.sheetsByTitle[stringMonth];
+    if (!sheet) {
+      return { message: 'Sheet not found' };
+    }
     const rows = await doc.sheetsByTitle[stringMonth].getRows({
       offset: 2,
     });

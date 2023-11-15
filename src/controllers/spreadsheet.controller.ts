@@ -17,7 +17,7 @@ export class SpreadsheetController {
     const doc = await this.spreadSheetService.doc();
     const stringMonth =
       'Bulan ' +
-      date.toLocaleDateString('id-ID', {
+      date.toLocaleString('id-ID', {
         month: 'long',
       });
     const sheet = doc.sheetsByTitle[stringMonth];
@@ -32,13 +32,14 @@ export class SpreadsheetController {
         headerCount: 2,
         body,
       });
-      const currentDate = date.toLocaleDateString('id-ID', {
+      const currentDate = date.toLocaleString('id-ID', {
         weekday: 'long',
         day: '2-digit',
         month: 'long',
         year: 'numeric',
         timeZone: 'Asia/Jakarta',
       });
+      const stringCurrentDate = currentDate.toString();
       const data = table.map((item, index) => {
         return [
           rows.length + index + 1,
@@ -54,7 +55,7 @@ export class SpreadsheetController {
           item['TM 2'],
           '',
           '',
-          ` ${currentDate} `,
+          `=TO_TEXT("${stringCurrentDate}")`,
         ];
       });
       return this.spreadSheetService.sendBulkToExcel(data, {
@@ -78,7 +79,7 @@ export class SpreadsheetController {
         );
         if (find) {
           const dateString = date
-            .toLocaleDateString('id-ID', {
+            .toLocaleString('id-ID', {
               weekday: 'long',
               day: '2-digit',
               month: 'long',
@@ -87,7 +88,7 @@ export class SpreadsheetController {
             })
             .toString();
           rows[find.index].assign({
-            M: ` ${dateString} `,
+            M: `TO_TEXT=("${dateString}")`,
           });
           await rows[find.index].save();
         }
@@ -128,7 +129,7 @@ export class SpreadsheetController {
     const sheet = await doc.addSheet({
       title:
         'Bulan ' +
-        new Date().toLocaleDateString('id-ID', {
+        new Date().toLocaleString('id-ID', {
           month: 'long',
         }),
     });

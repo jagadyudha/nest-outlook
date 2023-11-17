@@ -88,7 +88,7 @@ export class SpreadsheetController {
             })
             .toString();
           rows[find.index].assign({
-            M: `TO_TEXT=("${dateString}")`,
+            M: `=TO_TEXT("${dateString}")`,
           });
           await rows[find.index].save();
         }
